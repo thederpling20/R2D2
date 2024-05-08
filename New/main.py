@@ -155,6 +155,7 @@ if __name__ == "__main__":
                 engine.say('Returning to listening for my name...')
                 engine.runAndWait()
                 engine.stop()
+                
                 print("\n\n")
                 print("#"*10)
                 print("Listening for wakewords...")
