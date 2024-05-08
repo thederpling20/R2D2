@@ -1,19 +1,23 @@
-
 # Imports
-
-from pydub import AudioSegment
-from pydub.playback import play
-
-
-import openwakeword
+import sounddevice as sd
+from scipy.io.wavfile import write
 import pyaudio
 import numpy as np
 from openwakeword.model import Model
 import argparse
-import time
-
 import pyttsx3
+import cv2
 
+
+
+fs = 44100  # Sample rate
+listenlength = 10  # Duration of recording
+
+
+
+
+vid_cap = cv2.VideoCapture(0)
+vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
 ###################################
 #FOR TEXT TO SPEECH################
@@ -22,14 +26,14 @@ engine = pyttsx3.init() # object creation
 
 """ RATE"""
 rate = engine.getProperty('rate')   # getting details of current speaking rate
-                    #printing current voice rate
+                                    #printing current voice rate
 engine.setProperty('rate', 125)     # setting up new voice rate
 
 
 """VOLUME"""
 volume = engine.getProperty('volume')   #getting to know current volume level (min=0 and max=1)
-                        #printing current volume level
-engine.setProperty('volume',1.0)    # setting up volume level  between 0 and 1
+                                        #printing current volume level
+engine.setProperty('volume',1.0)        # setting up volume level  between 0 and 1
 
 """VOICE"""
 voices = engine.getProperty('voices')       #getting details of current voice
@@ -122,8 +126,42 @@ if __name__ == "__main__":
                 disambiguate += 5
                 print("Wakeword Detected!")
                 print("Playing Sound!")
-                engine.say("I heard my name! I'm listening.")
+
+                vid_out = cv2.VideoWriter('./apiRequest/videofiles/vision.mp4', vid_fourcc, 20.0, (640,480))
+
+                engine.say(f"I heard my name! I'm recording for {listenlength} seconds starting now!")
                 engine.runAndWait()
                 engine.stop()
+
+                listenrecording = sd.rec(int(listenlength * fs), samplerate=fs, channels=2)   
+                timerecorded = 0.0
+                while(int(timerecorded)<listenlength):
+                    # Capture each frame of webcam video
+                    ret,frame = vid_cap.read()
+                    timerecorded+=0.05 #20 fps
+                    vid_out.write(frame)
+                
+                sd.wait()  # Wait until recording is finished
+                vid_cap.release()#Close all the video stuff
+                vid_out.release()#Close all the video stuff
+                cv2.destroyAllWindows()#Close all the video stuff
+
+                write('./apiRequest/audiofiles/listen.wav', fs, listenrecording)  # Save as WAV file
+
+                engine.say('Done recording, let me think about that for a moment...')
+                engine.runAndWait()
+                engine.stop()
+
+                engine.say('Returning to listening for my name...')
+                engine.runAndWait()
+                engine.stop()
+                print("\n\n")
+                print("#"*10)
+                print("Listening for wakewords...")
+                print("#"*10)
+                print("\n\n")
+
+                
+                
                 
         
