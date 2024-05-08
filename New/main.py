@@ -13,12 +13,6 @@ import cv2
 fs = 44100  # Sample rate
 listenlength = 10  # Duration of recording
 
-
-
-
-vid_cap = cv2.VideoCapture(0)
-vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-
 ###################################
 #FOR TEXT TO SPEECH################
 ###################################
@@ -40,7 +34,10 @@ voices = engine.getProperty('voices')       #getting details of current voice
 #engine.setProperty('voice', voices[0].id)  #changing index, changes voices. o for male
 engine.setProperty('voice', voices[0].id)   #changing index, changes voices. 1 for female
 
-
+def tts(text):
+    engine.say(text)
+    engine.runAndWait()
+    engine.stop()
 ####################
 #END TEXT TO SPEECH#
 ####################
@@ -142,12 +139,13 @@ if __name__ == "__main__":
                 disambiguate += 5
                 #End wakeword stuff
                 print("Wakeword Detected!")
+                tts(f'I heard my name. Just a moment.')
 
+                vid_cap = cv2.VideoCapture(0) #Video parameters
+                vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v') #other video parameter
                 vid_out = cv2.VideoWriter('./apiRequest/videofiles/vision.mp4', vid_fourcc, 20.0, (640,480)) #Create video recording object
 
-                engine.say(f"I heard my name! I'm recording for {listenlength} seconds starting now!") #TTS
-                engine.runAndWait()
-                engine.stop()
+                tts(f"I'm recording for {listenlength} seconds starting now!")
 
                 listenrecording = sd.rec(int(listenlength * fs), samplerate=fs, channels=2)  #Start audio recording
 
@@ -165,13 +163,9 @@ if __name__ == "__main__":
 
                 write('./apiRequest/audiofiles/listen.wav', fs, listenrecording)  # Save audio as WAV file
 
-                engine.say('Done recording, let me think about that for a moment...') #TTS
-                engine.runAndWait()
-                engine.stop()
+                tts('Done recording, let me think about that for a moment...') #TTS
 
-                engine.say('Returning to listening for my name...') #TTS
-                engine.runAndWait()
-                engine.stop()
+                tts('Returning to listening for my name...') #TTS
 
                 print("\n\n")
                 print("#"*10)

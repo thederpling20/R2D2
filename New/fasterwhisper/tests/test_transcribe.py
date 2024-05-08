@@ -8,9 +8,9 @@ def test_supported_languages():
     assert model.supported_languages == ["en"]
 
 
-def test_transcribe_function(jfk_path):
-    model = WhisperModel("small.en")
-    segments, info = model.transcribe(jfk_path, word_timestamps=True)
+def test_transcribe_function(path, model = 'small.en'):
+    model = WhisperModel(model)
+    segments, info = model.transcribe(path, word_timestamps=True)
 
     segments = list(segments)
 
