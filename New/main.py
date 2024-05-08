@@ -46,6 +46,10 @@ engine.setProperty('voice', voices[0].id)   #changing index, changes voices. 1 f
 ####################
 
 
+#########################
+#FOR WAKE WORD AND AUDIO#
+#########################
+
 # Parse input arguments
 parser=argparse.ArgumentParser()
 parser.add_argument(
@@ -88,6 +92,16 @@ else:
 
 n_models = len(owwModel.models.keys())
 
+#########################
+#END WAKE WORD AND AUDIO#
+#########################
+
+
+
+
+
+
+
 # Run capture loop continuosly, checking for wakewords
 if __name__ == "__main__":
     # Generate output string header
@@ -97,7 +111,9 @@ if __name__ == "__main__":
     print("#"*100)
     print("\n"*(n_models*3))
     disambiguate = 0
-    while True:
+    while True: #main loop
+
+        #Wakeword stuff
         # Get audio
         audio = np.frombuffer(mic_stream.read(CHUNK), dtype=np.int16)
 
@@ -124,41 +140,42 @@ if __name__ == "__main__":
         if disambiguate == 0:
             if scores[-1] >= 0.6:
                 disambiguate += 5
+                #End wakeword stuff
                 print("Wakeword Detected!")
-                print("Playing Sound!")
 
-                vid_out = cv2.VideoWriter('./apiRequest/videofiles/vision.mp4', vid_fourcc, 20.0, (640,480))
+                vid_out = cv2.VideoWriter('./apiRequest/videofiles/vision.mp4', vid_fourcc, 20.0, (640,480)) #Create video recording object
 
-                engine.say(f"I heard my name! I'm recording for {listenlength} seconds starting now!")
+                engine.say(f"I heard my name! I'm recording for {listenlength} seconds starting now!") #TTS
                 engine.runAndWait()
                 engine.stop()
 
-                listenrecording = sd.rec(int(listenlength * fs), samplerate=fs, channels=2)   
+                listenrecording = sd.rec(int(listenlength * fs), samplerate=fs, channels=2)  #Start audio recording
+
                 timerecorded = 0.0
-                while(int(timerecorded)<listenlength):
+                while(int(timerecorded)<listenlength): #Record into the video object for 10 seconds (at 20 fps, scales automatically besides that)
                     # Capture each frame of webcam video
                     ret,frame = vid_cap.read()
                     timerecorded+=0.05 #20 fps
                     vid_out.write(frame)
                 
-                sd.wait()  # Wait until recording is finished
-                vid_cap.release()#Close all the video stuff
+                sd.wait()  # Wait until audio recording is finished
+                vid_cap.release()#Close and save all the video stuff
                 vid_out.release()#Close all the video stuff
                 cv2.destroyAllWindows()#Close all the video stuff
 
-                write('./apiRequest/audiofiles/listen.wav', fs, listenrecording)  # Save as WAV file
+                write('./apiRequest/audiofiles/listen.wav', fs, listenrecording)  # Save audio as WAV file
 
-                engine.say('Done recording, let me think about that for a moment...')
+                engine.say('Done recording, let me think about that for a moment...') #TTS
                 engine.runAndWait()
                 engine.stop()
 
-                engine.say('Returning to listening for my name...')
+                engine.say('Returning to listening for my name...') #TTS
                 engine.runAndWait()
                 engine.stop()
-                
+
                 print("\n\n")
                 print("#"*10)
-                print("Listening for wakewords...")
+                print("Listening for wakewords...") #Console message to indicate it is now listening (obviously)
                 print("#"*10)
                 print("\n\n")
 
